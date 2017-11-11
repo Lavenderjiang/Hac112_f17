@@ -1,0 +1,25 @@
+.image-post {
+    background-color: #d3d3d3;
+    margin-bottom: 30px;
+}
+
+.image-post:hover {
+    background-color: #b3b3b3;
+}
+
+.image-post:active {
+    background-color: #c3c3c3;
+}
+
+.image {
+    width: 100%;
+    height: 250px;
+}
+
+.caption-text {
+    padding: 15px;
+}
+
+.postedby-text {
+    padding: 15px;
+}
