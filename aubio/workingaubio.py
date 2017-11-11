@@ -1,4 +1,6 @@
 import aubio
+from pydub import AudioSegment
+from audio_segment_demo import *
 
 def findPitchLetterName(frequency):
     if(frequency < 82 or frequency > 1000): return "silence"
@@ -92,7 +94,8 @@ def detect(filename):
             if read < hop_s: break
         letterList = []
         newPitches = []
-        for index in range(0, len(pitches), len(pitches)//20):
+        amplitudes = []
+        for index in range(0, len(pitches)):
             totalFreq = 0
             if(index+5 <= len(pitches)):
                 for freq in range(index, index+5):
@@ -106,15 +109,22 @@ def detect(filename):
                     counter += 1
                 averageFreq = totalFreq/counter
                 newPitches.append(averageFreq)
+            # loudness
+            amp = AudioSegment.from_wav(filename,)
+            amplitudes.append(amp.rms)
         for pi in newPitches:
             letterName = findPitchLetterName(pi)
-            letterList.append(letterName)
+            letterList.append(pi) # letterName -> pi for frequency numbers
         newList = modifyList(letterList)
         note = findModeInList(newList)
-        return letterList
+        return letterList, amplitudes
 
 print(detect("test.wav"))
 
+def soundFromFile(file):
+    return AudioSegment.from_wav(file) + 0
+
+print(AudioSegment.from_wav("test.wav"))
 
 
 
