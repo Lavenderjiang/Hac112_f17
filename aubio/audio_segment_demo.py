@@ -11,4 +11,4 @@ def soundFromFile(file):
 def getSection(file, start, end):
     sound = soundFromFile(file)
     newSound = sound[start:end]
-    return exportToFile(newSound, "slice.wav")
+    return newSound

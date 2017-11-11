@@ -78,7 +78,3 @@ def record(outputFile):
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
-
-record("connor.wav")
-
-play("connor.wav")

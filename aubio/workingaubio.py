@@ -110,7 +110,7 @@ def detect(filename):
                 averageFreq = totalFreq/counter
                 newPitches.append(averageFreq)
             # loudness
-            amp = AudioSegment.from_wav(filename,)
+            amp = getSection(filename,index, index + 5)
             amplitudes.append(amp.rms)
         for pi in newPitches:
             letterName = findPitchLetterName(pi)
@@ -119,12 +119,9 @@ def detect(filename):
         note = findModeInList(newList)
         return letterList, amplitudes
 
-print(detect("test.wav"))
 
 def soundFromFile(file):
     return AudioSegment.from_wav(file) + 0
-
-print(AudioSegment.from_wav("test.wav"))
 
 
 
