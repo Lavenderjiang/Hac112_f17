@@ -1,6 +1,7 @@
 import aubio
 from pydub import AudioSegment
 from audio_segment_demo import *
+import beat
 
 def findPitchLetterName(frequency):
     if(frequency < 82 or frequency > 1000): return "silence"
@@ -169,12 +170,9 @@ def buildChords(note, chordType, inversion):
         chord = [root, third, fifth]
         return chord
 
+def getTempo(filename):
+    path = filename
+    return beat.get_file_bpm(path)
 
-
-def main():
-    return detect("test.wav")
-    
-if __name__ == '__main__':
-    main()
 
 
