@@ -105,7 +105,7 @@ def detect(filename):
                 newPitches.append(averageFreq)
             else:
                 counter = 0
-                for index in range(index, len(pitches)):
+                for index in range(index, len(pitches), int(len(pitches) / duration(filename))):
                     totalFreq += pitches[freq]
                     counter += 1
                 averageFreq = totalFreq/counter
@@ -121,12 +121,84 @@ def detect(filename):
         return letterList, amplitudes
 
 
+def detectKey(filename):
+        downsample = 8
+        samplerate = 44100 // downsample
+        win_s = 4096 // downsample # fft size
+        hop_s = 512  // downsample # hop size
+        s = aubio.source(filename, samplerate, hop_s)
+        samplerate = s.samplerate
+        tolerance = 0.8
+        pitch_o = aubio.pitch("yin", win_s, hop_s, samplerate)
+        pitch_o.set_unit("freq")
+        pitch_o.set_tolerance(tolerance)
+        pitches = []
+        confidences = []
+        # total number of frames read
+        total_frames = 0
+        counter = 0
+        while True:
+            samples, read = s()
+            pitch = pitch_o(samples)[0]
+            confidence = pitch_o.get_confidence()
+            #print "%f %f %f" % (total_frames / float(samplerate), pitch, confidence)
+            pitches += [pitch]
+            confidences += [confidence]
+            total_frames += read
+            if read < hop_s: break
+        letterList = []
+        newPitches = []
+        for index in range(0, len(pitches), len(pitches)//20):
+            totalFreq = 0
+            if(index+5 <= len(pitches)):
+                for freq in range(index, index+5):
+                    totalFreq += pitches[freq]
+                averageFreq = totalFreq/5
+                newPitches.append(averageFreq)
+            else:
+                counter = 0
+                for index in range(index, len(pitches)):
+                    totalFreq += pitches[freq]
+                    counter += 1
+                averageFreq = totalFreq/counter
+                newPitches.append(averageFreq)
+        for pi in newPitches:
+            letterName = findPitchLetterName(pi)
+            letterList.append(letterName)
+        newList = modifyList(letterList)
+        note = findModeInList(newList)
+        # letterList is a list of all notes
+        # need most common and second most common
+        return mode(letterList)
+
 def soundFromFile(file):
-    return AudioSegment.from_wav(file) + 0
+    return AudioSegment.from_wav(file)
 
+def duration(filename):
+    song = AudioSegment.from_wav(filename)
+    return song.duration_seconds
 
-
-
+def mode(letterList):
+    notes = {}
+    for i in letterList:
+        if i in notes and i != "silence":
+            notes[i] += 1
+        elif i not in notes and i != "silence":
+            notes[i] = 1
+    maxNum = -1
+    for note in notes:
+        if notes[note] > maxNum:
+            maxNote = note
+            maxNum = notes[note]
+    tonic = maxNote
+    oldMaxNum = maxNum
+    maxNum = -1
+    for note in notes:
+        if notes[note] > maxNum and notes[note] < oldMaxNum:
+            maxNote = note
+            maxNum = notes[note]
+    dominant = maxNote
+    return (tonic, dominant)
 
 
 def buildChords(note, chordType, inversion):
