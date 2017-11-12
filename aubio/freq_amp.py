@@ -57,7 +57,7 @@ def detect(filename):
         #print(letterList, amplitudes)
         return letterList, amplitudes
         
-def detect2(filename):
+def getPitchAndAmp(filename):
     f = detect(filename)
     # list of pitches
     freq = f[0]
@@ -72,7 +72,7 @@ def detect2(filename):
     
     
 def main():
-    return detect2("connor.wav")
+    return getPitchAndAmp("connor.wav")
     
 if __name__ == '__main__':
     main()
