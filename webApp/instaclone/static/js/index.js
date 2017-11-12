@@ -52,4 +52,16 @@ function onRecordingReady(e) {
   // e.data contains a blob representing the recording
   audio.src = URL.createObjectURL(e.data);
   audio.play();
+
+  //Download the blob
+  //Code from https://mozdevs.github.io/MediaRecorder-examples/download-blob.html
+  var link = document.createElement('a');
+  link.setAttribute('href', URL.createObjectURL(e.data));
+  link.setAttribute('download', 'audio.txt');
+
+  // NOTE: We need to add temporarily the link to the DOM so
+  //       we can trigger a 'click' on it.
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
