@@ -68,8 +68,114 @@ def findModeInList(letterList):
     return notes
 
 #modified from: https://git.aubio.org/?p=aubio.git;a=blob;f=python/demos/demo_pitch.py;h=81f17cd4b3eed408abb31adbccd1ba39296dbacd;hb=c3c6305987848593034cb34501a9d3bc7afd6e8c
+# def detect(filename):
+#         downsample = 8
+#         samplerate = 44100 // downsample
+#         win_s = 4096 // downsample # fft size
+#         hop_s = 512  // downsample # hop size
+#         s = aubio.source(filename, samplerate, hop_s)
+#         samplerate = s.samplerate
+#         tolerance = 0.8
+#         pitch_o = aubio.pitch("yin", win_s, hop_s, samplerate)
+#         pitch_o.set_unit("freq")
+#         pitch_o.set_tolerance(tolerance)
+#         pitches = []
+#         confidences = []
+#         # total number of frames read
+#         total_frames = 0
+#         counter = 0
+#         while True:
+#             samples, read = s()
+#             pitch = pitch_o(samples)[0]
+#             confidence = pitch_o.get_confidence()
+#             #print "%f %f %f" % (total_frames / float(samplerate), pitch, confidence)
+#             pitches += [pitch]
+#             confidences += [confidence]
+#             total_frames += read
+#             if read < hop_s: break
+#         letterList = []
+#         newPitches = []
+#         amplitudes = []
+#         for index in range(0, len(pitches)):
+#             totalFreq = 0
+#             if(index+5 <= len(pitches)):
+#                 for freq in range(index, index+5):
+#                     totalFreq += pitches[freq]
+#                 averageFreq = totalFreq/5
+#                 newPitches.append(averageFreq)
+#             else:
+#                 counter = 0
+#                 for index in range(index, len(pitches)):
+#                     totalFreq += pitches[freq]
+#                     counter += 1
+#                 averageFreq = totalFreq/counter
+#                 newPitches.append(averageFreq)
+#             # loudness
+#             amp = getSection(filename,index, index + 5)
+#             amplitudes.append(amp.rms)
+#         for pi in newPitches:
+#             #letterName = findPitchLetterName(pi)
+#             letterList.append(pi) # letterName -> pi for frequency numbers
+#         #newList = modifyList(letterList)
+#         #note = findModeInList(newList)
+#         return letterList, amplitudes
+
+
 def detect(filename):
-        downsample = 500
+        downsample = 8
+        samplerate = 44100 // downsample
+        win_s = 4096 // downsample # fft size
+        hop_s = 512  // downsample # hop size
+        s = aubio.source(filename, samplerate, hop_s)
+        samplerate = s.samplerate
+        tolerance = 0.8
+        pitch_o = aubio.pitch("yin", win_s, hop_s, samplerate)
+        pitch_o.set_unit("freq")
+        pitch_o.set_tolerance(tolerance)
+        pitches = []
+        confidences = []
+        # total number of frames read
+        total_frames = 0
+        counter = 0
+        while True:
+            samples, read = s()
+            pitch = pitch_o(samples)[0]
+            confidence = pitch_o.get_confidence()
+            #print "%f %f %f" % (total_frames / float(samplerate), pitch, confidence)
+            pitches += [pitch]
+            confidences += [confidence]
+            total_frames += read
+            if read < hop_s: break
+        letterList = []
+        newPitches = []
+        amplitudes = []
+        for index in range(0, len(pitches)): #, len(pitches)//20):
+            totalFreq = 0
+            if(index+5 <= len(pitches)):
+                for freq in range(index, index+5):
+                    totalFreq += pitches[freq]
+                averageFreq = totalFreq/5
+                newPitches.append(averageFreq)
+                # amp = getSection(filename, index, index + 5)
+                amplitudes.append(amp.rms)
+            else:
+                counter = 0
+                for index in range(index, len(pitches)):
+                    totalFreq += pitches[freq]
+                    counter += 1
+                averageFreq = totalFreq/counter
+                newPitches.append(averageFreq)
+                # amp = getSection(filename, index, index + len(pitches))
+                # amplitudes.append(amp.rms)
+        for pi in newPitches:
+            letterName = findPitchLetterName(pi)
+            letterList.append(pi)
+        newList = modifyList(letterList)
+        note = findModeInList(newList)
+        return letterList
+
+def getAmp(filename):
+        downsample = 8
         samplerate = 44100 // downsample
         win_s = 4096 // downsample # fft size
         hop_s = 512  // downsample # hop size
@@ -97,29 +203,9 @@ def detect(filename):
         newPitches = []
         amplitudes = []
         for index in range(0, len(pitches)):
-            totalFreq = 0
-            if(index+5 <= len(pitches)):
-                for freq in range(index, index+5):
-                    totalFreq += pitches[freq]
-                averageFreq = totalFreq/5
-                newPitches.append(averageFreq)
-            else:
-                counter = 0
-                for index in range(index, len(pitches), int(len(pitches) / duration(filename))):
-                    totalFreq += pitches[freq]
-                    counter += 1
-                averageFreq = totalFreq/counter
-                newPitches.append(averageFreq)
-            # loudness
-            amp = getSection(filename,index, index + 5)
+            amp = getSection(filename, index, )#, index + 5)
             amplitudes.append(amp.rms)
-        for pi in newPitches:
-            letterName = findPitchLetterName(pi)
-            letterList.append(pi) # letterName -> pi for frequency numbers
-        newList = modifyList(letterList)
-        note = findModeInList(newList)
-        return letterList, amplitudes
-
+        return amplitudes
 
 def detectKey(filename):
         downsample = 8
@@ -202,45 +288,7 @@ def mode(letterList):
             maxNum = notes[note]
     dominant = maxNote
     
-    oldMaxNum = maxNum
-    maxNum = -1
-    for note in notes:
-        if notes[note] > maxNum and notes[note] < oldMaxNum:
-            maxNote = note
-            maxNum = notes[note]
-    three = maxNote
-    
-    oldMaxNum = maxNum
-    maxNum = -1
-    for note in notes:
-        if notes[note] > maxNum and notes[note] < oldMaxNum:
-            maxNote = note
-            maxNum = notes[note]
-    four = maxNote
-    
-    oldMaxNum = maxNum
-    maxNum = -1
-    for note in notes:
-        if notes[note] > maxNum and notes[note] < oldMaxNum:
-            maxNote = note
-            maxNum = notes[note]
-    five = maxNote
-    oldMaxNum = maxNum
-    maxNum = -1
-    for note in notes:
-        if notes[note] > maxNum and notes[note] < oldMaxNum:
-            maxNote = note
-            maxNum = notes[note]
-    six = maxNote
-    oldMaxNum = maxNum
-    maxNum = -1
-    for note in notes:
-        if notes[note] > maxNum and notes[note] < oldMaxNum:
-            maxNote = note
-            maxNum = notes[note]
-    seven = maxNote
-    return (tonic, dominant, three, four, five, six, seven)
-
+    return (tonic, dominant)
 
 def buildChords(note, chordType, inversion):
     if(note != []):
@@ -304,5 +352,6 @@ def beatStrength(filename):
     avg = sum / len(beats)
     proportion = avg / maxBeat
     proportion *= 9
+    proportion = 9 - proportion
     return proportion
 

@@ -90,6 +90,7 @@ def detect(filename):
             if read < hop_s: break
         letterList = []
         newPitches = []
+        print(total_frames)
         for index in range(0, len(pitches), len(pitches)//20): #change num for differen sample size
             totalFreq = 0
             if(index+5 <= len(pitches)):
