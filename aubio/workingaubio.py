@@ -69,7 +69,7 @@ def findModeInList(letterList):
 
 #modified from: https://git.aubio.org/?p=aubio.git;a=blob;f=python/demos/demo_pitch.py;h=81f17cd4b3eed408abb31adbccd1ba39296dbacd;hb=c3c6305987848593034cb34501a9d3bc7afd6e8c
 def detect(filename):
-        downsample = 8
+        downsample = 500
         samplerate = 44100 // downsample
         win_s = 4096 // downsample # fft size
         hop_s = 512  // downsample # hop size
@@ -181,16 +181,19 @@ def duration(filename):
 def mode(letterList):
     notes = {}
     for i in letterList:
-        if i in notes and i != "silence":
+        i = i[:-1]
+        if i in notes and i != "silenc":
             notes[i] += 1
-        elif i not in notes and i != "silence":
+        elif i not in notes and i != "silenc":
             notes[i] = 1
+    
     maxNum = -1
     for note in notes:
         if notes[note] > maxNum:
             maxNote = note
             maxNum = notes[note]
     tonic = maxNote
+    
     oldMaxNum = maxNum
     maxNum = -1
     for note in notes:
@@ -198,7 +201,45 @@ def mode(letterList):
             maxNote = note
             maxNum = notes[note]
     dominant = maxNote
-    return (tonic, dominant)
+    
+    oldMaxNum = maxNum
+    maxNum = -1
+    for note in notes:
+        if notes[note] > maxNum and notes[note] < oldMaxNum:
+            maxNote = note
+            maxNum = notes[note]
+    three = maxNote
+    
+    oldMaxNum = maxNum
+    maxNum = -1
+    for note in notes:
+        if notes[note] > maxNum and notes[note] < oldMaxNum:
+            maxNote = note
+            maxNum = notes[note]
+    four = maxNote
+    
+    oldMaxNum = maxNum
+    maxNum = -1
+    for note in notes:
+        if notes[note] > maxNum and notes[note] < oldMaxNum:
+            maxNote = note
+            maxNum = notes[note]
+    five = maxNote
+    oldMaxNum = maxNum
+    maxNum = -1
+    for note in notes:
+        if notes[note] > maxNum and notes[note] < oldMaxNum:
+            maxNote = note
+            maxNum = notes[note]
+    six = maxNote
+    oldMaxNum = maxNum
+    maxNum = -1
+    for note in notes:
+        if notes[note] > maxNum and notes[note] < oldMaxNum:
+            maxNote = note
+            maxNum = notes[note]
+    seven = maxNote
+    return (tonic, dominant, three, four, five, six, seven)
 
 
 def buildChords(note, chordType, inversion):
@@ -242,9 +283,26 @@ def buildChords(note, chordType, inversion):
         chord = [root, third, fifth]
         return chord
 
-def getTempo(filename):
+def getTempoAndBeat(filename):
     path = filename
     return beat.get_file_bpm(path)
 
+def getTempo(filename):
+    return getTempoAndBeat(filename)[1]
 
+def getBeat(filename):
+    return getTempoAndBeat(filename)[1]
+
+def beatStrength(filename):
+    beats = getBeat(filename)
+    maxBeat = -1
+    sum = 0
+    for b in beats:
+        if b > maxBeat:
+            maxBeat = b
+        sum += b
+    avg = sum / len(beats)
+    proportion = avg / maxBeat
+    proportion *= 9
+    return proportion
 
