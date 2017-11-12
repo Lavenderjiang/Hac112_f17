@@ -1,86 +1,71 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>InstaClone</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <script type="text/javascript" src="{% static 'js/index.js' %}"></script>
-    
+  <title>InstaClone</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
 </head>
 <body>
-    <nav class="navbar navbar-default">
-      <div class="container-fluid">
-          <a class="navbar-brand" href="/">MusicVisualizer</a>
-      </div>
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">MusicVisualizer</a>
+    </div>
   </div><!-- /.container-fluid -->
 </nav>
-<video autoplay></video>
 
-<script>
-  var errorCallback = function(e) {
-    console.log('Reeeejected!', e);
-  };
+<p><button id="record" disabled>Record audio</button> </p>
+<p><button id="stop" disabled>Stop</button></p>
+<p><button id="download" disabled="">Download fortune cookie</button></p>
+    <p><audio id="audio" controls></audio></p>
 
-  // Not showing vendor prefixes.
-  navigator.getUserMedia({video: true, audio: true}, function(localMediaStream) {
-    var video = document.querySelector('video');
-    video.src = window.URL.createObjectURL(localMediaStream);
-
-    // Note: onloadedmetadata doesn't fire in Chrome when using it with getUserMedia.
-    // See crbug.com/110938.
-    video.onloadedmetadata = function(e) {
-      // Ready to go. Do some stuff.
-    };
-  }, errorCallback);
-</script>
-
-
-<input type="file" accept="audio/*;capture=microphone">
 
 <div class="container">
-    <div class="row">
-      <form method="post" action="/createPost">
-        {% csrf_token %}
-        <div class="form-group">
-          <label>Image URL</label>
-          <input name="imgURL" type="text" class="form-control" placeholder="A URL from Google!">
+  <div class="row">
+    <form method="post" action="/createPost">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Image URL</label>
+        <input name="imgURL" type="text" class="form-control" placeholder="A URL from Google!">
       </div>
       <div class="form-group">
-          <label>Name</label>
-          <input name="name" type="text" class="form-control" placeholder="What is your name">
+        <label>Name</label>
+        <input name="name" type="text" class="form-control" placeholder="What is your name">
       </div>
       <div class="form-group">
-          <label>Caption</label>
-          <input name="caption" type="text" class="form-control" placeholder="What is the picture about?">
+        <label>Caption</label>
+        <input name="caption" type="text" class="form-control" placeholder="What is the picture about?">
       </div>
       <button type="submit" class="btn btn-default">Submit</button>
-  </form>
-</div>
+    </form>
+  </div>
 </div>
 
 <div class="container">
-    <div class="row">
-        {% for post in posts%}
-        <div class="col-md-4">
-            <a href="/post/{{ post.id}}">
-                <div class="image-post">
-                    <div class="image-area">
-                        <img class="image" src="{{ post.imgURL }}">
-                    </div>
-                    <div class="caption-text">
-                        {{ post.caption }}
-                    </div>
-                    <div class="postedby-text">
-                        Posted by {{ post.postedBy }}
-                    </div>
-                </div>
-            </a>
+  <div class="row">
+    {% for post in posts%}
+    <div class="col-md-4">
+      <a href="/post/{{ post.id}}">
+        <div class="image-post">
+          <div class="image-area">
+            <img class="image" src="{{ post.imgURL }}">
+          </div>
+          <div class="caption-text">
+            {{ post.caption }}
+          </div>
+          <div class="postedby-text">
+            Posted by {{ post.postedBy }}
+          </div>
         </div>
-        {% endfor %}
+      </a>
     </div>
+    {% endfor %}
+  </div>
 </div>
+
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script src="{% static 'js/index.js' %}"></script>
+
 </body>
 </html>

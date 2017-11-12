@@ -1,1 +1,3 @@
-print("Hi~")
+import pyaudio
+
+print("hi")
