@@ -60,7 +60,7 @@ def get_file_bpm(path, params=None):
             print("not enough beats found in {:s}".format(path))
             return 0
 
-    return beats_to_bpm(beats, path)
+    return (beats_to_bpm(beats, path), beats)
 
 if __name__ == '__main__':
     import argparse
