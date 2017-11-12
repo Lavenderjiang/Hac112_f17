@@ -1,4 +1,8 @@
 import math, decimal
+import random
+from tkinter import *
+from PIL import ImageTk, Image
+from workingaubio import *
 ####################################
 # helper
 ####################################
@@ -17,9 +21,9 @@ def roundHalfUp(d):
 def colorRange(strength, tempo, major):
     if major == True:
         Gmax = 255
-        Gmin = 195
+        Gmin = 130
     else:
-        Gmax = 61
+        Gmax = 120
         Gmin = 1
     
     Rmin = (strength+.1)*256//13
@@ -35,6 +39,7 @@ def colorRange(strength, tempo, major):
     else:
         Bmin = 256*(tempo-50)//250 +1
         Bmax = 256*(tempo)//250-1
+    print(((Rmin, Rmax), (Gmin, Gmax), (Bmin, Bmax)))
     return ((Rmin, Rmax), (Gmin, Gmax), (Bmin, Bmax))
 
 
@@ -46,7 +51,7 @@ class ColorDots (object):
     cOctaves = (16.35, 32.70, 65.41, 130.81, 261.63, 523.25, 1046.50	, 2093, 4186)
     numOctaves = len(cOctaves)
 
-    def __init__(self, freq, amp):
+    def __init__(self, freq, amp = 3):
         self.freq = freq #color
         self.amp = amp #size
 
@@ -110,11 +115,110 @@ class ColorDots (object):
         red = int(red)
         blue = int(blue)
         green = int(green)
-        self.color = (str(red) +"-"+ str(green) +"-"+ str(blue))
-        return self.color
+        return [red, green, blue]
+
+###
+#tkinter
+###
+
+def init(data):
+    data.filename = "br-mi.wav"
+    data.colorRanges = colorRange(beatStrength(data.filename), getTempo(data.filename), False)
+    data.dots = []
+    for freq in detect(data.filename):
+        data.dots.append(ColorDots(freq))
+    data.x = 0
+    data.y = 0
+
+def mousePressed(event, data):
+    pass
+    
+def keyPressed(event, data):
+    pass   
+
+def timerFired(data):
+    pass
+
+def redrawAll(canvas, data):
+    for dot in data.dots:
+        data.x = random.randint(0, data.width)
+        data.y = random.randint(0, data.height)
+        col = (dot.color(data.colorRanges)[0], dot.color(data.colorRanges)[1], dot.color(data.colorRanges)[2])
+        hexCol = '#%02x%02x%02x' % col
+        canvas.create_oval(data.x - 3, data.y - 3, data.x + 3, data.y + 3, fill = hexCol, width = 0)
+
+####################################
+# use the run function as-is
+####################################
+
+def run(width=300, height=300):
+    def redrawAllWrapper(canvas, data):
+        canvas.delete(ALL)
+        canvas.create_rectangle(0, 0, data.width, data.height,
+                                fill='white', width=0)
+        redrawAll(canvas, data)
+        canvas.update()    
+
+    def mousePressedWrapper(event, canvas, data):
+        mousePressed(event, data)
+        redrawAllWrapper(canvas, data)
+
+    def keyPressedWrapper(event, canvas, data):
+        keyPressed(event, data)
+        redrawAllWrapper(canvas, data)
+
+    def timerFiredWrapper(canvas, data):
+        timerFired(data)
+        redrawAllWrapper(canvas, data)
+        # pause, then call timerFired again
+        canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
+    # Set up data and call init
+    class Struct(object): pass
+    data = Struct()
+    data.width = width
+    data.height = height
+    data.timerDelay = 100 # milliseconds
+    init(data)
+    # create the root and the canvas
+    root = Tk()
+    canvas = Canvas(root, width=data.width, height=data.height)
+    canvas.pack()
+    # set up events
+    root.bind("<Button-1>", lambda event:
+                            mousePressedWrapper(event, canvas, data))
+    root.bind("<Key>", lambda event:
+                            keyPressedWrapper(event, canvas, data))
+    timerFiredWrapper(canvas, data)
+    # and launch the app
+    root.mainloop()  # blocks until window is closed
+    print("bye!")
+
+#run(400, 400)
+
+#This creates the main window of an application
+window = Tk()
+window.title("Join")
+window.geometry("300x300")
+window.configure(background='White')
+
+path = "p1.jpg"
+
+#Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
+img = ImageTk.PhotoImage(Image.open(path))
+
+#The Label widget is a standard Tkinter widget used to display a text or image on the screen.
+panel = Label(window, image = img)
+
+#The Pack geometry manager packs widgets in rows or columns.
+panel.pack(side = "bottom", fill = "both", expand = "yes")
+
+#Start the GUI
+window.mainloop()
+
 ###
 #remove
 #just for show
-colorRanges = colorRange(3, 201, False)
-dot = ColorDots(70, 40) #freq, amp
+filename = "br-mi.wav"
+colorRanges = colorRange(beatStrength(filename), getTempo(filename), False)
+dot = ColorDots(70) #freq, amp
 print (dot.color(colorRanges))
